@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      margin: 0;
+      background-color: #111111;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .inputBox {
+      width: 180px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .inputBox * {
+      transition: 1s all;
+    }
+
+    .inputBox img {
+      margin-bottom: 3em;
+    }
+    
+    .inputBox input,
+    .inputBox button {
+      border: none;
+      background-color: transparent;
+      color: #dddddd;
+      font-family: 'Iosevka Term';
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 1em;
+    }
+
+    .inputBox button {
+      margin-top: 2em;
+      color: transparent;
+    }
+
+    .inputBox input:active,
+    .inputBox input:focus,
+    .inputBox input::selection,
+    .inputBox button:focus,
+    .inputBox button:active {
+      color: #ffffff;
+      outline: none;
+    }
+      
+    #messages {
+      color: slateblue;
+      font-family: 'Iosevka Term';
+      font-size: 18px;
+      position: absolute;
+      bottom: 4em;
+      width: 100%;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+  </style>
+</head>
+
+<body id="body">
+<div>
+
+  <div class="inputBox">
+
+      <img src="arch.png"/>
+      
+      <input 
+        id="uname" 
+        type="text"
+        placeholder="username" />
+
+      <input 
+        id="pword" 
+        type="password"
+        placeholder="password" />
+
+      <button
+        id="loginbtn"
+        onclick="javascript:submit();" >
+        < GO >
+      <button />
+
+  </div>
+
+  <div class="messageBox" id="messages"></div>
+
+</div>
+<script>
+
+  function show_error(msg)
+  {
+      document.querySelector('#messages').style.color = 'red';
+      document.querySelector('#messages').innerHTML = msg;
+  }
+
+  function show_message(msg) 
+  {
+      document.querySelector('#messages').style.color = 'slateblue';
+      document.querySelector('#messages').innerHTML = msg;
+  }
+
+  function shutdown()
+  {
+    lightdm.shutdown();
+  }
+
+  function submit()
+  {
+    let uname = document.querySelector('#uname').value;
+    let pword = document.querySelector('#pword').value;
+    
+    if(lightdm._username) 
+      lightdm.cancel_authentication();
+    lightdm.cancel_timed_login();
+
+    lightdm.start_authentication(uname);
+    setTimeout(() => lightdm.provide_secret(pword), 200);
+  }
+
+  function authentication_complete() 
+  {
+    if (lightdm.is_authenticated)
+      transition();
+    else
+      show_message("Wrong Password!");
+  }
+
+  function transition() 
+  {
+    document.querySelector('#uname').style.display = 'none';
+    document.querySelector('#pword').style.display = 'none';
+    document.querySelector('#loginbtn').style.display = 'none';
+    lightdm.login(lightdm.authentication_user, lightdm.start_session_sync, 'i3');
+  }
+
+  document.addEventListener('DOMContentLoaded', ((e) => {
+    document.querySelector('#uname').value = 'bjarke'; 
+    document.querySelector('#pword').focus();
+  }).bind(document));
+
+</script>
+
+</body>
+</html>

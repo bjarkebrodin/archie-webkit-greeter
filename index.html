@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <style>
 
-    html, body {
+    body {
       background-image: url('/usr/share/backgrounds/greeter/default.jpg');
       background-position: center;
       background-size: cover;
@@ -29,7 +29,7 @@
     }
 
     .inputBox * {
-      transition: 1s all;
+      transition: 1s opacity;
     }
 
     .inputBox img {
@@ -93,9 +93,8 @@
         placeholder="password" />
 
       <button
-        id="loginbtn"
-        onclick="javascript:submit();" >
-        < GO >
+        id="loginbtn">
+        < Login >
       <button />
 
   </div>
@@ -106,66 +105,69 @@
 <script>
 
   // const $ = (selector) => document.querySelector(selector).bind(document);
+  async function main() {
 
-  window.show_error = function (msg)
-  {
-      document.querySelector('#messages').style.color = 'red';
-      document.querySelector('#messages').innerHTML = msg;
-  }
-
-  window.show_message = function (msg) {
-      document.querySelector('#messages').style.color = 'slateblue';
-      document.querySelector('#messages').innerHTML = msg;
-  }
-
-  window.show_prompt = function () {
-
-  }
-
-  window.shutdown = function ()
-  {
-    lightdm.shutdown();
-  }
-
-  window.submit = function ()
-  {
-    let uname = document.querySelector('#uname').value;
-    let pword = document.querySelector('#pword').value;
-    
-    lightdm.authenticate(uname);
-    setTimeout(() => lightdm.respond(pword), 200);
-  }
-
-  window.authentication_complete = function () 
-  {
-    if (lightdm.is_authenticated) {
-      document.documentElement.addEventListener('transitioned', transition);
-    } else {
-      show_message("Wrong Password!");
-      setTimeout(start_authentication, 2000);
+    window.show_error = function (msg) {
+        document.querySelector('#messages').style.color = 'red';
+        document.querySelector('#messages').innerHTML = msg;
     }
-  }
 
-  window.autologin_timer_expired = function (username) {}
+    window.show_message = function (msg) {
+        document.querySelector('#messages').style.color = 'slateblue';
+        document.querySelector('#messages').innerHTML = msg;
+    }
 
-  function transition() 
-  {
-    document.querySelector('#uname').style.display = 'none';
-    document.querySelector('#pword').style.display = 'none';
-    document.querySelector('#loginbtn').style.display = 'none';
-    lightdm.start_session('i3');
-  }
+    window.show_prompt = function () {}
 
-  window.addEventListener('GreeterReady', ((e) => {
+    window.shutdown = function () {
+      lightdm.shutdown();
+    }
+
+    submit = async function () {
+      let uname = document.querySelector('#uname').value;
+      let pword = document.querySelector('#pword').value;
+      
+      lightdm.cancel_authentication();
+      lightdm.authenticate(uname);
+      setTimeout(() => lightdm.respond(pword), 500);
+    }
+
+    window.authentication_complete = function () {
+      if (lightdm.is_authenticated) {
+        document.querySelector('#uname').style.opacity = 0;
+        document.querySelector('#pword').style.opacity = 0;
+        document.querySelector('#loginbtn').style.opacity = 0;
+        let session = lightdm.sessions[0].name || 'i3';
+        document.documentElement.addEventListener('transitionend', () => lightdm.start_session(session));
+      } else {
+        show_message("Wrong Password!");
+      }
+    }
+
+    window.autologin_timer_expired = function (username) {}
+
     document.querySelector('#uname').value = 'bjarke'; 
     document.querySelector('#pword').focus();
-    lightdm.show_message.connect(show_message);
-    lightdm.show_prompt.connect(show_prompt);
-    lightdm.authentication_complete.connect(authentication_complete);
-    lightdm.autologin_timer_expired.connect(autologin_timer_expired);
-  }).bind(document));
+    document.querySelector('#loginbtn').addEventListener('click', submit);
+
+    lightdm.show_message.connect(window.show_message);
+    lightdm.show_prompt.connect(window.show_prompt);
+    lightdm.authentication_complete.connect(window.authentication_complete);
+    lightdm.autologin_timer_expired.connect(window.autologin_timer_expired);
+
+    document.querySelector('#pword').addEventListener('keypress', (e) => {
+      if (e.key == 'Enter') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          submit();
+      }
+    });
+  }
+
+  window.addEventListener('GreeterReady', () => setTimeout(main, 200));
 
 </script>
 
 </body>
+
 </html>

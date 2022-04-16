@@ -6,11 +6,16 @@
   <style>
 
     html, body {
+      background-image: url('/usr/share/backgrounds/greeter/default.jpg');
+      background-position: center;
+      background-size: cover;
+    }
+
+    html, body {
       width: 100%;
       height: 100%;
       overflow: hidden;
       margin: 0;
-      background-color: #111111;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -100,55 +105,64 @@
 </div>
 <script>
 
-  function show_error(msg)
+  // const $ = (selector) => document.querySelector(selector).bind(document);
+
+  window.show_error = function (msg)
   {
       document.querySelector('#messages').style.color = 'red';
       document.querySelector('#messages').innerHTML = msg;
   }
 
-  function show_message(msg) 
-  {
+  window.show_message = function (msg) {
       document.querySelector('#messages').style.color = 'slateblue';
       document.querySelector('#messages').innerHTML = msg;
   }
 
-  function shutdown()
+  window.show_prompt = function () {
+
+  }
+
+  window.shutdown = function ()
   {
     lightdm.shutdown();
   }
 
-  function submit()
+  window.submit = function ()
   {
     let uname = document.querySelector('#uname').value;
     let pword = document.querySelector('#pword').value;
     
-    if(lightdm._username) 
-      lightdm.cancel_authentication();
-    lightdm.cancel_timed_login();
-
-    lightdm.start_authentication(uname);
-    setTimeout(() => lightdm.provide_secret(pword), 200);
+    lightdm.authenticate(uname);
+    setTimeout(() => lightdm.respond(pword), 200);
   }
 
-  function authentication_complete() 
+  window.authentication_complete = function () 
   {
-    if (lightdm.is_authenticated)
-      transition();
-    else
+    if (lightdm.is_authenticated) {
+      document.documentElement.addEventListener('transitioned', transition);
+    } else {
       show_message("Wrong Password!");
+      setTimeout(start_authentication, 2000);
+    }
   }
+
+  window.autologin_timer_expired = function (username) {}
 
   function transition() 
   {
     document.querySelector('#uname').style.display = 'none';
     document.querySelector('#pword').style.display = 'none';
     document.querySelector('#loginbtn').style.display = 'none';
-    lightdm.login(lightdm.authentication_user, lightdm.start_session_sync, 'i3');
+    lightdm.start_session('i3');
   }
 
-  document.addEventListener('DOMContentLoaded', ((e) => {
+  window.addEventListener('GreeterReady', ((e) => {
     document.querySelector('#uname').value = 'bjarke'; 
     document.querySelector('#pword').focus();
+    lightdm.show_message.connect(show_message);
+    lightdm.show_prompt.connect(show_prompt);
+    lightdm.authentication_complete.connect(authentication_complete);
+    lightdm.autologin_timer_expired.connect(autologin_timer_expired);
   }).bind(document));
 
 </script>

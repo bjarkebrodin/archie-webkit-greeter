@@ -155,7 +155,7 @@
     lightdm.authentication_complete.connect(window.authentication_complete);
     lightdm.autologin_timer_expired.connect(window.autologin_timer_expired);
 
-    document.querySelector('#pword').addEventListener('keypress', (e) => {
+    document.querySelector('#pword').addEventListener('keydown', (e) => {
       if (e.key == 'Enter') {
           e.preventDefault();
           e.stopImmediatePropagation();

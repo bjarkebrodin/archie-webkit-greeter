@@ -64,7 +64,8 @@
     #messages {
       color: slateblue;
       font-family: 'Iosevka Term';
-      font-size: 18px;
+      font-weight: 800;
+      font-size: 24px;
       position: absolute;
       bottom: 4em;
       width: 100%;
@@ -90,7 +91,7 @@
       <input 
         id="pword" 
         type="password"
-        placeholder="password" />
+        placeholder="" />
 
       <button
         id="loginbtn">
@@ -129,7 +130,7 @@
       
       lightdm.cancel_authentication();
       lightdm.authenticate(uname);
-      setTimeout(() => lightdm.respond(pword), 500);
+      setTimeout(() => lightdm.respond(pword, 500);
     }
 
     window.authentication_complete = function () {
@@ -140,7 +141,7 @@
         let session = lightdm.sessions[0].name || 'i3';
         document.documentElement.addEventListener('transitionend', () => lightdm.start_session(session));
       } else {
-        show_message("Wrong Password!");
+        show_error("Wrong Password!");
       }
     }
 
@@ -160,6 +161,7 @@
           e.preventDefault();
           e.stopImmediatePropagation();
           submit();
+      } else {
       }
     });
   }
